@@ -1,6 +1,13 @@
 # Born raytrace
 ### Weak gravitational lensing: raytrace through overdensity Healpix maps to return a convergence map with python
 
+Requirements (python3):
+- numpy
+- scipy
+- healpy
+- astropy
+- matplotlib
+
 # Formalism:
 
 The weak lensing convergence κ is given by a weighted projection of the density along the line of sight from the observer to a point with radial comoving distance χ and angular position φ on the sky
