@@ -12,10 +12,10 @@ For a radial (redshift) distribution $n(\chi)$ of lensed source galaxies, the co
 
 <img src="https://render.githubusercontent.com/render/math?math=\kappa (\vv{\phi}) &= \int_0^\infty n(\chi) \kappa(\vv{\phi}, \chi ) \mathrm{d} \chi = \frac{3 H_0^2 \Omega_m}{2} \int_0^\infty \mathrm{d} \chi' f(\chi')  \chi' \frac{\delta(\vv{\phi}, \chi')}{a(\chi')} \ \  ">
 
-\noindent where 
+where 
 
-<img src="https://render.githubusercontent.com/render/math?math=f(\chi') = \int^{\infty}_{\chi^\prime}  \left( \frac{\chi - \chi^\prime}{\chi}\right)n(\chi) \mathrm{d} \chi  \  "> /.
+<img src="https://render.githubusercontent.com/render/math?math=f(\chi') = \int^{\infty}_{\chi^\prime}  \left( \frac{\chi - \chi^\prime}{\chi}\right)n(\chi) \mathrm{d} \chi  \  "> 
 
 \noindent The convergence for the distribution of source galaxies at angular position $\vv{\phi}$ on the sky is therefore given by
 
-<img src="https://render.githubusercontent.com/render/math?math=\kappa(\vv{\phi}) = \frac{3 H_0^2 \Omega_m}{2} \int_0^\infty  \Big[ \int_0^\chi\frac{\chi' (\chi - \chi')}{\chi} \frac{\delta(\vv{\phi}, \chi')}{a(\chi')}  \mathrm{d} \chi'  \Big] n(\chi) \mathrm{d} \chi \  "> .
+<img src="https://render.githubusercontent.com/render/math?math=\kappa(\vv{\phi}) = \frac{3 H_0^2 \Omega_m}{2} \int_0^\infty  \Big[ \int_0^\chi\frac{\chi' (\chi - \chi')}{\chi} \frac{\delta(\vv{\phi}, \chi')}{a(\chi')}  \mathrm{d} \chi'  \Big] n(\chi) \mathrm{d} \chi \  "> 
