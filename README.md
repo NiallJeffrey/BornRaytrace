@@ -8,6 +8,12 @@ Requirements (python3):
 - astropy
 - matplotlib
 
+# Validation:
+
+Included in the repository are example Healpix simulated density maps described by () available: http://cosmo.phys.hirosaki-u.ac.jp/takahasi/allsky_raytracing/
+
+The born_raytrace code is validated against the results from GRayTrace (http://th.nao.ac.jp/MEMBER/hamanatk/GRayTrix/index.html) using these simulations.
+
 # Formalism:
 
 The weak lensing convergence κ is given by a weighted projection of the density along the line of sight from the observer to a point with radial comoving distance χ and angular position φ on the sky
