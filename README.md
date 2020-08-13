@@ -9,7 +9,7 @@ The weak lensing convergence κ is given by a weighted projection of the density
 
 where H_0 is the present value of the Hubble parameter, a is the cosmological scale factor, Ω_m is the matter density parameter, δ is the overdensity, and the speed of light c=1. We have assumed flatness, such that the cosmological global curvature is zero, K=0.
 
-For a radial (redshift) distribution $n(\chi)$ of lensed source galaxies, the convergence is given by
+For a radial (redshift) distribution n(χ ) of lensed source galaxies, the convergence is given by
 
 <img src="https://render.githubusercontent.com/render/math?math=\kappa ({\phi}) = \int_0^\infty n(\chi) \kappa({\phi}, \chi ) \mathrm{d} \chi = \frac{3 H_0^2 \Omega_m}{2} \int_0^\infty \mathrm{d} \chi' f(\chi')  \chi' \frac{\delta({\phi}, \chi')}{a(\chi')} ">
 
