@@ -8,6 +8,8 @@ Requirements (python3):
 - astropy
 - matplotlib
 
+If you find this code useful, please cite: "Likelihood-free inference with neural compression of DES SV weak lensing map statistics", [Jeffrey, Alsing, Lanusse 2020]
+
 # Validation:
 
 Included in the repository are example Healpix simulated density maps described by (https://arxiv.org/abs/1706.01472) available: http://cosmo.phys.hirosaki-u.ac.jp/takahasi/allsky_raytracing/
