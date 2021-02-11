@@ -19,67 +19,33 @@ def kappa_prefactor(H0, Om0, length_unit = 'Mpc'):
     bit_with_units = H0.to(u.s ** -1)/const.c.to(str(length_unit + '/s'))
     return 1.5 * Om0 * bit_with_units * bit_with_units
 
-def raytrace_overdensity(cosmo, h, om, overdensity_shells, bin_centres, a_array, max_index, z_max, mask):
 
-    print('z_max should be roughly: ', 1/a_array[max_index - 1] - 1, z_max)
-    kappa_map = np.zeros(overdensity_shells.shape[1])
-    comoving_max = h * cosmo.comoving_distance(z_max).value
-
-    comoving_prefactors = ((comoving_max - bin_centres[:]) * bin_centres / comoving_max) / 0.7
-
-    kappa_prefactor_val = kappa_prefactor(cosmo.H(0), om, 'Mpc').value
-    print(kappa_prefactor_val)
-
-    shell_width = (bin_centres[1] - bin_centres[0]) / h
-    print(shell_width)
-
-    counter = 0
-    length = len(np.where(mask > 0.5)[0])
-    print(length)
-
-    for i in np.where(mask > 0.5)[0]:
-        if counter % int(length / 20) == 0:
-            print(counter, length)
-
-        integrand = (comoving_prefactors * overdensity_shells[:, i] / a_array)[:max_index]
-
-        integral_val = np.sum(integrand) * shell_width
-        kappa_map[i] = kappa_prefactor_val * integral_val
-        counter += 1
-
-    return np.where(mask > 0.5, kappa_map, hp.UNSEEN)
-
-
-def sum_kappa(kappa_prefactor, overdensity_array, comoving_centre, a_centre, comoving_max, mask, comoving_edges=None):
+def raytrace_integration(kappa_prefactor, overdensity_array, a_centre, comoving_edges, mask=None):
     """
     This function is meant to give the identical result to raytrace_overdensity, but is meant to be cleaner code
     :param kappa_prefactor: defined as the output of the function kappa_prefactor
     :param overdensity_array: an 2D array of overdensity healpix maps in radial shells
-    :param comoving_centre: centre of radial shells
-    :param a_centre: scale factor at centre of shells
-    :param comoving_max: maximum comoving distance
+    :param a_centre: scale factor at comoving centre of shells
     :param mask: healpix map where 1 is observed and 0 is mask
-    :param comoving_edges: edges of comoving bins
-    :return: kappa map
+    :param comoving_edges: comoving distance to edges of shells
+    :return: convergence kappa map
     """
+    
+    assert overdensity_array.shape[1] + 1 == comoving_edges.shape[0]
 
-    kappa = np.zeros(overdensity_array[:, 0].shape)
-
-    if comoving_edges is not None:
-        dr_array = comoving_edges[1:] - comoving_edges[:-1]
-    else:
-        dr_array = (comoving_centre[1]-comoving_centre[0]) * np.ones(len(comoving_centre))
-
-    print(dr_array.shape, comoving_max)
+    dr_array = comoving_edges[1:] - comoving_edges[:-1]
+    comoving_max = comoving_edges[-1]
+    comoving_centre = 0.5*(comoving_edges[:-1] + comoving_edges[1:])
+    
     comoving_prefactors = dr_array * (comoving_max - comoving_centre) * comoving_centre / (comoving_max * a_centre)
-    print(comoving_prefactors.shape)
+    comoving_prefactors *= kappa_prefactor
+    
+    if mask is not None:
+        mask = np.where(mask>0.5,1.,0.).T
+        overdensity_array = mask * overdensity_array
+        
+    return np.sum(comoving_prefactors * overdensity_array,axis=1)
 
-    for i in np.where(mask > 0.5)[0]:
-        if i % 100000 == 0:
-            print(i)
-        kappa[i] = np.sum(kappa_prefactor * overdensity_array[i, :] * comoving_prefactors[:])
-
-    return kappa
 
 
 def W_kernel(r_array, z_array, nz, simpsons=False):
