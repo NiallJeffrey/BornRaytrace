@@ -33,7 +33,7 @@ s8 = s8_list[index]
 h = 0.6736
 nside = 1024
 zmax= 3.
-print(om,s8,filenames[index])
+print(om,s8,filenames[index], flush=True)
 
 directory_input = '/global/cscratch1/sd/dominikz/DES_Y3_PKDGRAV_SIMS/grid_run_1/' + str(filenames[index])
 directory_output = '/global/cscratch1/sd/ucapnje/DES_Y3_PKDGRAV_kappa/grid_run_1/' + str(filenames[index])
@@ -57,7 +57,7 @@ kappa_pref_evaluated = br.kappa_prefactor(cosmo_fiducial.H0, cosmo_fiducial.Om0,
 overdensity_array = np.zeros((len(sim_filenames),hp.nside2npix(nside)), dtype=np.float32)
 for i in range(overdensity_array.shape[0]):
     map_read = hp.read_map(os.path.join(directory_input, sim_filenames[i]), verbose=False).astype(np.float32)
-    print(sim_filenames[i], z_bin_edges[i])
+    print(sim_filenames[i], z_bin_edges[i], flush=True)
     overdensity_array[i] = hp.ud_grade(map_read/np.mean(map_read)-1.,nside)
     
 
@@ -69,7 +69,7 @@ for i in range(len(comoving_edges)-1):
                              0.5*(comoving_edges[i]+comoving_edges[i+1]))
     
 for source_edge_index in np.arange(1,len(z_bin_edges)):
-    print(z_bin_edges[source_edge_index])
+    print(z_bin_edges[source_edge_index], flush=True)
     map_temp = br.raytrace_integration(kappa_prefactor=kappa_pref_evaluated,
                                                         overdensity_array=overdensity_array[:source_edge_index].T,
                                                         a_centre=1./(1.+z_centre[:source_edge_index]),
