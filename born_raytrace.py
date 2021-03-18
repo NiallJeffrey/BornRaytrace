@@ -44,7 +44,7 @@ def raytrace_integration(kappa_prefactor, overdensity_array, a_centre, comoving_
         mask = np.where(mask>0.5,1.,0.).T
         overdensity_array = mask * overdensity_array
         
-    return np.sum(comoving_prefactors * overdensity_array,axis=1)
+    return np.sum(comoving_prefactors * overdensity_array,axis=1).value
 
 
 
