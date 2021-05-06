@@ -76,3 +76,23 @@ def W_kernel(r_array, z_array, nz, simpsons=False):
             q[i] = trapz(integrand, r_array[i:])
 
     return q * r_array * (1. + z_array)
+
+
+def rotate_mask_approx(mask, rot_angles, flip=False):
+    """
+    rotate healpix mask on sphere
+    :param mask: healpix map of ones and zeros
+    :param rot_angles: rotation on the sphere (e.g. [ 45.91405291 ,150.72092269 , 46.34505909])
+    :param flip: boolean, mirror the mask 
+    :return: rotated map
+    """
+    nside = hp.npix2nside(len(mask))
+    alpha, delta = hp.pix2ang(nside, np.arange(len(mask)))
+    alpha = alpha[np.where(mask>0.)]
+    delta = delta[np.where(mask>0.)]
+    rot = hp.rotator.Rotator(rot=rot_angles, deg=True)
+    rot_alpha, rot_delta = rot(alpha, delta)
+    rot_i = hp.ang2pix(nside, rot_alpha, rot_delta*(1-2*float(flip)))
+    rot_map = mask*0.
+    rot_map[rot_i] += 1 
+    return rot_map
