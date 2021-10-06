@@ -10,11 +10,6 @@ Requirements (python3):
 
 If you find this code useful, please cite: "Likelihood-free inference with neural compression of DES SV weak lensing map statistics", [Jeffrey, Alsing, Lanusse 2020]
 
-# Validation:
-
-Included in the repository are example Healpix simulated density maps described by (https://arxiv.org/abs/1706.01472) available: http://cosmo.phys.hirosaki-u.ac.jp/takahasi/allsky_raytracing/
-
-The born_raytrace code is validated against the results from GRayTrace (http://th.nao.ac.jp/MEMBER/hamanatk/GRayTrix/index.html) using these simulations.
 
 # Formalism:
 
@@ -35,3 +30,10 @@ where
 The convergence for the distribution of source galaxies at angular position φ on the sky is therefore given by
 
 <img src="https://render.githubusercontent.com/render/math?math=\kappa({\phi}) = \frac{3 H_0^2 \Omega_m}{2} \int_0^\infty  \Big[ \int_0^\chi\frac{\chi' (\chi - \chi')}{\chi} \frac{\delta({\phi}, \chi')}{a(\chi')}  \mathrm{d} \chi'  \Big] n(\chi) \mathrm{d} \chi "> 
+
+# Validation:
+
+Included in the repository are example Healpix simulated density maps described by (https://arxiv.org/abs/1706.01472) available: http://cosmo.phys.hirosaki-u.ac.jp/takahasi/allsky_raytracing/
+
+The born_raytrace code is validated against the results from GRayTrace (http://th.nao.ac.jp/MEMBER/hamanatk/GRayTrix/index.html) using these simulations.
+
