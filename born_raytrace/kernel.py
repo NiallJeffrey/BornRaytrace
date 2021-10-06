@@ -172,57 +172,57 @@ def F(z, Om0, A_ia, eta=None, z0=None, lbar=None, l0=None, beta=None):
         return -A_ia*omega(c1)*Om0/D(z, Om0)
     
     
-+def shear2kappa(shear_map, lmax=None):
-+    """
-+    Performs Kaiser-Squires on the sphere with healpy spherical harmonics
-+    :param shear_map: healpix format complex shear map
-+    :param lmax:
-+    :return: kappa map
-+    """
-+
-+    nside = hp.npix2nside(len(shear_map))
-+    alms = hp.map2alm([shear_map.real, shear_map.real, shear_map.imag], lmax=lmax, pol=True)
-+    ell, emm = hp.Alm.getlm(lmax=lmax)
-+    almsE = alms[1] * 1. * ((ell * (ell + 1.)) / ((ell + 2.) * (ell - 1))) ** 0.5
-+
-+    almsE[ell == 0] = 0.0
-+    almsE[ell == 1] = 0.0
-+
-+    kappa_E = hp.alm2map(almsE, nside=nside, lmax=lmax, pol=False)
-+    kappa_B = hp.alm2map(almsE, nside=nside, lmax=lmax, pol=False)
-+
-+    return kappa_E + 1j*kappa_B
-+
-+
-+def shear2kappa(kappa_map, lmax=None):
-+    """
-+    Performs inverse Kaiser-Squires on the sphere with healpy spherical harmonics
-+    :param kappa_map: healpix format complex convergence (kappa) map
-+    :param lmax:
-+    :return: complex shear map (gamma1 + 1j * gamma2)
-+    """
-+
-+    nside = hp.npix2nside(len(kappa_map))
-+    # alms = hp.map2alm([kappa_map.real, kappa_map.real, kappa_map.imag], lmax=lmax, pol=True)
-+    # ell, emm = hp.Alm.getlm(lmax=lmax)
-+
-+    # almsE = alms[1] / (1. * ((ell * (ell + 1.)) / ((ell + 2.) * (ell - 1))) ** 0.5)
-+    # almsB = alms[2] / (1. * ((ell * (ell + 1.)) / ((ell + 2.) * (ell - 1))) ** 0.5)
-+    # almsE[ell == 0] = 0.0
-+    # almsB[ell == 0] = 0.0
-+
-+    alms = hp.map2alm(kappa_map.real, lmax=lmax, pol=False)
-+    ell, emm = hp.Alm.getlm(lmax=lmax)
-+    kalmsE = alms / (1. * ((ell * (ell + 1.)) / ((ell + 2.) * (ell - 1))) ** 0.5)
-+
-+    kalmsE[ell == 0] = 0.0
-+
-+    alms = hp.map2alm(kappa_map.imag, lmax=lmax, pol=False)
-+    ell, emm = hp.Alm.getlm(lmax=lmax)
-+    kalmsB = alms / (1. * ((ell * (ell + 1.)) / ((ell + 2.) * (ell - 1))) ** 0.5)
-+
-+    kalmsB[ell == 0] = 0.0
-+
-+    _, gamma1, gamma2 = hp.alm2map([kalmsE, kalmsE, kalmsB], nside=nside, lmax=lmax, pol=True)
-+    return gamma1 + 1j*gamma2
+def shear2kappa(shear_map, lmax=None):
+    """
+    Performs Kaiser-Squires on the sphere with healpy spherical harmonics
+    :param shear_map: healpix format complex shear map
+    :param lmax:
+    :return: kappa map
+    """
+
+    nside = hp.npix2nside(len(shear_map))
+    alms = hp.map2alm([shear_map.real, shear_map.real, shear_map.imag], lmax=lmax, pol=True)
+    ell, emm = hp.Alm.getlm(lmax=lmax)
+    almsE = alms[1] * 1. * ((ell * (ell + 1.)) / ((ell + 2.) * (ell - 1))) ** 0.5
+
+    almsE[ell == 0] = 0.0
+    almsE[ell == 1] = 0.0
+
+    kappa_E = hp.alm2map(almsE, nside=nside, lmax=lmax, pol=False)
+    kappa_B = hp.alm2map(almsE, nside=nside, lmax=lmax, pol=False)
+
+    return kappa_E + 1j*kappa_B
+
+
+def shear2kappa(kappa_map, lmax=None):
+    """
+    Performs inverse Kaiser-Squires on the sphere with healpy spherical harmonics
+    :param kappa_map: healpix format complex convergence (kappa) map
+    :param lmax:
+    :return: complex shear map (gamma1 + 1j * gamma2)
+    """
+
+    nside = hp.npix2nside(len(kappa_map))
+    # alms = hp.map2alm([kappa_map.real, kappa_map.real, kappa_map.imag], lmax=lmax, pol=True)
+    # ell, emm = hp.Alm.getlm(lmax=lmax)
+
+    # almsE = alms[1] / (1. * ((ell * (ell + 1.)) / ((ell + 2.) * (ell - 1))) ** 0.5)
+    # almsB = alms[2] / (1. * ((ell * (ell + 1.)) / ((ell + 2.) * (ell - 1))) ** 0.5)
+    # almsE[ell == 0] = 0.0
+    # almsB[ell == 0] = 0.0
+
+    alms = hp.map2alm(kappa_map.real, lmax=lmax, pol=False)
+    ell, emm = hp.Alm.getlm(lmax=lmax)
+    kalmsE = alms / (1. * ((ell * (ell + 1.)) / ((ell + 2.) * (ell - 1))) ** 0.5)
+
+    kalmsE[ell == 0] = 0.0
+
+    alms = hp.map2alm(kappa_map.imag, lmax=lmax, pol=False)
+    ell, emm = hp.Alm.getlm(lmax=lmax)
+    kalmsB = alms / (1. * ((ell * (ell + 1.)) / ((ell + 2.) * (ell - 1))) ** 0.5)
+
+    kalmsB[ell == 0] = 0.0
+
+    _, gamma1, gamma2 = hp.alm2map([kalmsE, kalmsE, kalmsB], nside=nside, lmax=lmax, pol=True)
+    return gamma1 + 1j*gamma2
 
