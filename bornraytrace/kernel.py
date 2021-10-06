@@ -170,12 +170,7 @@ def F(z, Om0, A_ia, eta=None, z0=None, lbar=None, l0=None, beta=None):
         return -A_ia*omega(c1)*Om0/D(z, Om0)*((lbar/l0)**beta)*(((1+z)/(1+z0))**eta)
     else:
         return -A_ia*omega(c1)*Om0/D(z, Om0)
-<<<<<<< HEAD
-=======
-
-
->>>>>>> 0be1c4892bbf9364448dc7f34153d55f58f6d624
-    
+        
     
 def shear2kappa(shear_map, lmax=None):
     """
@@ -230,7 +225,3 @@ def shear2kappa(kappa_map, lmax=None):
 
     _, gamma1, gamma2 = hp.alm2map([kalmsE, kalmsE, kalmsB], nside=nside, lmax=lmax, pol=True)
     return gamma1 + 1j*gamma2
-<<<<<<< HEAD
-
-=======
->>>>>>> 0be1c4892bbf9364448dc7f34153d55f58f6d624
