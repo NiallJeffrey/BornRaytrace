@@ -10,8 +10,26 @@ Requirements (python3):
 ``` astropy```
 ``` healpy```
 
+### Citation:
+
 If you find this code useful, please cite: "Likelihood-free inference with neural compression of DES SV weak lensing map statistics", [Jeffrey, Alsing, Lanusse 2020]
 
+```
+article{2020,
+   title={Likelihood-free inference with neural compression of DES SV weak lensing map statistics},
+   volume={501},
+   ISSN={1365-2966},
+   url={http://dx.doi.org/10.1093/mnras/staa3594},
+   DOI={10.1093/mnras/staa3594},
+   number={1},
+   journal={Monthly Notices of the Royal Astronomical Society},
+   publisher={Oxford University Press (OUP)},
+   author={Jeffrey, Niall and Alsing, Justin and Lanusse, François},
+   year={2020},
+   month={Nov},
+   pages={954–969}
+}
+````
 
 # Born weak lensing formalism:
 
