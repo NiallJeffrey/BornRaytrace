@@ -1,17 +1,19 @@
-# Born raytrace
-### Weak gravitational lensing: raytrace through overdensity Healpix maps to return a convergence map with python
+# BornRaytrace
+### Simulating weak gravitational lensing effects: 
++ Raytrace through overdensity Healpix maps to return a convergence map
++ Include shear-kappa transformation on the full sphere
++ Include intrinsic alignments (NLA model)
 
 Requirements (python3):
-- numpy
-- scipy
-- healpy
-- astropy
-- matplotlib
+``` numpy```
+``` scipy```
+``` astropy```
+``` healpy```
 
 If you find this code useful, please cite: "Likelihood-free inference with neural compression of DES SV weak lensing map statistics", [Jeffrey, Alsing, Lanusse 2020]
 
 
-# Formalism:
+# Born weak lensing formalism:
 
 The weak lensing convergence κ is given by a weighted projection of the density along the line of sight from the observer to a point with radial comoving distance χ and angular position φ on the sky
 
@@ -35,5 +37,5 @@ The convergence for the distribution of source galaxies at angular position φ o
 
 Included in the repository are example Healpix simulated density maps described by (https://arxiv.org/abs/1706.01472) available: http://cosmo.phys.hirosaki-u.ac.jp/takahasi/allsky_raytracing/
 
-The born_raytrace code is validated against the results from GRayTrace (http://th.nao.ac.jp/MEMBER/hamanatk/GRayTrix/index.html) using these simulations.
+The BornRaytrace code is validated against the results from GRayTrace (http://th.nao.ac.jp/MEMBER/hamanatk/GRayTrix/index.html) using these simulations.
 
