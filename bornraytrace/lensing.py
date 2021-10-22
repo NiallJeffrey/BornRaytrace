@@ -1,27 +1,22 @@
-import matplotlib.pyplot as plt
-import numpy as np
+
 import healpy as hp
-from astropy.io import fits
-
-
 from scipy.integrate import trapz
 from scipy.integrate import simps
-import os
-
-from astropy.cosmology import FlatLambdaCDM
-from astropy import units as u
 from astropy import constants as const
-from scipy.interpolate import interp1d
-from astropy.cosmology import z_at_value
-
 import numpy as np
-import scipy as sp
-from scipy import integrate
 from astropy import units as u
 
-def kappa_prefactor(H0, Om0, length_unit = 'Mpc'):
+
+def kappa_prefactor(H0, om0, length_unit = 'Mpc'):
+    """
+    Gives prefactor \frac{3 H_0^2 \Omega_m}{2}
+    :param H0: Hubble parameter with astropy units
+    :param om0: Omega matter
+    :param length_unit: for H0 (default Mpc)
+    :return: prefactor for lensing
+    """
     bit_with_units = H0.to(u.s ** -1)/const.c.to(str(length_unit + '/s'))
-    return 1.5 * Om0 * bit_with_units * bit_with_units
+    return 1.5 * om0 * bit_with_units * bit_with_units
 
 
 def raytrace_integration(kappa_prefactor, overdensity_array, a_centre, comoving_edges, mask=None):
@@ -51,7 +46,6 @@ def raytrace_integration(kappa_prefactor, overdensity_array, a_centre, comoving_
     return np.sum(comoving_prefactors * overdensity_array,axis=1).value
 
 
-
 def W_kernel(r_array, z_array, nz, simpsons=False):
     """
     lensing kernel W s.t.  kappa = prefactor * integral  W(r) * overdensity(r)  dr
@@ -63,7 +57,7 @@ def W_kernel(r_array, z_array, nz, simpsons=False):
     """
 
     # normalised redshift distribution nr
-    if simpsons == True:
+    if simpsons:
         normalisation = simps(nz, r_array)
     else:
         normalisation = trapz(nz, r_array)
@@ -74,7 +68,7 @@ def W_kernel(r_array, z_array, nz, simpsons=False):
     for i in range(len(r_array)):
         r = r_array[i]
         integrand = np.multiply(np.divide(r_array[i:] - r, r_array[i:]), nr[i:])
-        if simpsons == True:
+        if simpsons:
             q[i] = simps(integrand, r_array[i:])
         else:
             q[i] = trapz(integrand, r_array[i:])
@@ -101,14 +95,12 @@ def rotate_mask_approx(mask, rot_angles, flip=False):
     rot_map[rot_i] += 1 
     return rot_map
 
-
-        
     
 def shear2kappa(shear_map, lmax=None):
     """
     Performs Kaiser-Squires on the sphere with healpy spherical harmonics
     :param shear_map: healpix format complex shear map
-    :param lmax:
+    :param lmax: maximum ell multipole
     :return: kappa map
     """
 
@@ -135,24 +127,14 @@ def kappa2shear(kappa_map, lmax=None):
     """
 
     nside = hp.npix2nside(len(kappa_map))
-    # alms = hp.map2alm([kappa_map.real, kappa_map.real, kappa_map.imag], lmax=lmax, pol=True)
-    # ell, emm = hp.Alm.getlm(lmax=lmax)
-
-    # almsE = alms[1] / (1. * ((ell * (ell + 1.)) / ((ell + 2.) * (ell - 1))) ** 0.5)
-    # almsB = alms[2] / (1. * ((ell * (ell + 1.)) / ((ell + 2.) * (ell - 1))) ** 0.5)
-    # almsE[ell == 0] = 0.0
-    # almsB[ell == 0] = 0.0
 
     alms = hp.map2alm(kappa_map.real, lmax=lmax, pol=False)
     ell, emm = hp.Alm.getlm(lmax=lmax)
-    kalmsE = alms / (1. * ((ell * (ell + 1.)) / ((ell + 2.) * (ell - 1))) ** 0.5)
 
+    kalmsE = alms / (1. * ((ell * (ell + 1.)) / ((ell + 2.) * (ell - 1))) ** 0.5)
     kalmsE[ell == 0] = 0.0
 
-    alms = hp.map2alm(kappa_map.imag, lmax=lmax, pol=False)
-    ell, emm = hp.Alm.getlm(lmax=lmax)
     kalmsB = alms / (1. * ((ell * (ell + 1.)) / ((ell + 2.) * (ell - 1))) ** 0.5)
-
     kalmsB[ell == 0] = 0.0
 
     _, gamma1, gamma2 = hp.alm2map([kalmsE, kalmsE, kalmsB], nside=nside, lmax=lmax, pol=True)
