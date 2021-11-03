@@ -1,27 +1,22 @@
-import matplotlib.pyplot as plt
-import numpy as np
+
 import healpy as hp
-from astropy.io import fits
-
-
 from scipy.integrate import trapz
 from scipy.integrate import simps
-import os
-
-from astropy.cosmology import FlatLambdaCDM
-from astropy import units as u
 from astropy import constants as const
-from scipy.interpolate import interp1d
-from astropy.cosmology import z_at_value
-
 import numpy as np
-import scipy as sp
-from scipy import integrate
 from astropy import units as u
 
-def kappa_prefactor(H0, Om0, length_unit = 'Mpc'):
+
+def kappa_prefactor(H0, om0, length_unit = 'Mpc'):
+    """
+    Gives prefactor \frac{3 H_0^2 \Omega_m}{2}
+    :param H0: Hubble parameter with astropy units
+    :param om0: Omega matter
+    :param length_unit: for H0 (default Mpc)
+    :return: prefactor for lensing
+    """
     bit_with_units = H0.to(u.s ** -1)/const.c.to(str(length_unit + '/s'))
-    return 1.5 * Om0 * bit_with_units * bit_with_units
+    return 1.5 * om0 * bit_with_units * bit_with_units
 
 
 def raytrace_integration(kappa_prefactor, overdensity_array, a_centre, comoving_edges, mask=None):
@@ -51,7 +46,6 @@ def raytrace_integration(kappa_prefactor, overdensity_array, a_centre, comoving_
     return np.sum(comoving_prefactors * overdensity_array,axis=1).value
 
 
-
 def W_kernel(r_array, z_array, nz, simpsons=False):
     """
     lensing kernel W s.t.  kappa = prefactor * integral  W(r) * overdensity(r)  dr
@@ -63,7 +57,7 @@ def W_kernel(r_array, z_array, nz, simpsons=False):
     """
 
     # normalised redshift distribution nr
-    if simpsons == True:
+    if simpsons:
         normalisation = simps(nz, r_array)
     else:
         normalisation = trapz(nz, r_array)
@@ -74,7 +68,7 @@ def W_kernel(r_array, z_array, nz, simpsons=False):
     for i in range(len(r_array)):
         r = r_array[i]
         integrand = np.multiply(np.divide(r_array[i:] - r, r_array[i:]), nr[i:])
-        if simpsons == True:
+        if simpsons:
             q[i] = simps(integrand, r_array[i:])
         else:
             q[i] = trapz(integrand, r_array[i:])
@@ -101,82 +95,12 @@ def rotate_mask_approx(mask, rot_angles, flip=False):
     rot_map[rot_i] += 1 
     return rot_map
 
-
-def E_sq(z, Om0):
-    """
-    A function giving Hubble's law for flat cosmology
-    :param z: redshift value
-    :param Om0: matter density
-    :return: A value for the Hubble parameter
-    """
-    return Om0 * (1 + z) ** 3 + 1 - Om0
-
-
-def f(z, Om0):
-    """
-    A function for the redshift integrand in the intrinsic alignment calculation
-    :param z: redshift value
-    :param H0: Hubble's constant
-    :param Om0: matter density
-    :return: redshift integrand
-    """
-    return (z + 1) / (E_sq(z, Om0)) ** 1.5
-
-
-def D(z, Om0):
-    """
-    Provides the normalised linear growth factor
-    :param z: redshift value
-    :param H0: Hubble's constant
-    :param Om0: matter density
-    :return: normalised linear growth factor
-    """
-    first_integral = sp.integrate.quad(f, z, np.inf, args=(Om0))[0]
-    second_integral = sp.integrate.quad(f, 0, np.inf, args=(Om0))[0]
-
-    return (E_sq(z, Om0) ** 0.5) * first_integral / second_integral
-
-
-def omega(c1,h,crit_den):
-    """
-
-    :param c1: normalisation constant
-    :param h: reduced Hubble constant
-    :param crit_den: critical density of the universe
-    :return: a unit-correct c1* crit_den
-    """
-    return (crit_den/h**2)*(c1*h**2)
-
-
-def F(z, Om0, A_ia, eta=None, z0=None, lbar=None, l0=None, beta=None):
-    """
-    The remaining function after solving for the weighting used in the intrinsic alignment
-    :param z: redshift value
-    :param Om0: matter density
-    :param A_ia: strength of the intrinsic alignment signal. A free parameter.
-    :param eta: redshift dependence
-    :param z0: arbitrary redshift pivot parameter
-    :param lbar: average luminosity of source galaxy population
-    :param l0: arbitrary luminosity pivot parameter
-    :param beta: luminosity dependence
-    :return: a complete function of z, A_ia which can be multiplied by an overdensity to reproduce IA effect
-    """
-
-    if eta and z0 is not None:
-        return -A_ia*omega(c1)*Om0/D(z, Om0)*((1+z)/(1+z0))**eta
-    if lbar and l0 and beta is not None:
-        return -A_ia*omega(c1)*Om0/D(z, Om0)*(lbar/l0)**beta
-    if eta and z0 and lbar and l0 and beta is not None:
-        return -A_ia*omega(c1)*Om0/D(z, Om0)*((lbar/l0)**beta)*(((1+z)/(1+z0))**eta)
-    else:
-        return -A_ia*omega(c1)*Om0/D(z, Om0)
-        
     
 def shear2kappa(shear_map, lmax=None):
     """
     Performs Kaiser-Squires on the sphere with healpy spherical harmonics
     :param shear_map: healpix format complex shear map
-    :param lmax:
+    :param lmax: maximum ell multipole
     :return: kappa map
     """
 
@@ -194,7 +118,7 @@ def shear2kappa(shear_map, lmax=None):
     return kappa_E + 1j*kappa_B
 
 
-def shear2kappa(kappa_map, lmax=None):
+def kappa2shear(kappa_map, lmax=None):
     """
     Performs inverse Kaiser-Squires on the sphere with healpy spherical harmonics
     :param kappa_map: healpix format complex convergence (kappa) map
@@ -203,25 +127,31 @@ def shear2kappa(kappa_map, lmax=None):
     """
 
     nside = hp.npix2nside(len(kappa_map))
-    # alms = hp.map2alm([kappa_map.real, kappa_map.real, kappa_map.imag], lmax=lmax, pol=True)
-    # ell, emm = hp.Alm.getlm(lmax=lmax)
-
-    # almsE = alms[1] / (1. * ((ell * (ell + 1.)) / ((ell + 2.) * (ell - 1))) ** 0.5)
-    # almsB = alms[2] / (1. * ((ell * (ell + 1.)) / ((ell + 2.) * (ell - 1))) ** 0.5)
-    # almsE[ell == 0] = 0.0
-    # almsB[ell == 0] = 0.0
 
     alms = hp.map2alm(kappa_map.real, lmax=lmax, pol=False)
     ell, emm = hp.Alm.getlm(lmax=lmax)
-    kalmsE = alms / (1. * ((ell * (ell + 1.)) / ((ell + 2.) * (ell - 1))) ** 0.5)
 
+    kalmsE = alms / (1. * ((ell * (ell + 1.)) / ((ell + 2.) * (ell - 1))) ** 0.5)
     kalmsE[ell == 0] = 0.0
 
-    alms = hp.map2alm(kappa_map.imag, lmax=lmax, pol=False)
-    ell, emm = hp.Alm.getlm(lmax=lmax)
     kalmsB = alms / (1. * ((ell * (ell + 1.)) / ((ell + 2.) * (ell - 1))) ** 0.5)
-
     kalmsB[ell == 0] = 0.0
 
     _, gamma1, gamma2 = hp.alm2map([kalmsE, kalmsE, kalmsB], nside=nside, lmax=lmax, pol=True)
     return gamma1 + 1j*gamma2
+
+
+def recentre_nz(z_sim_edges, z_samp_centre, nz_input):
+    """
+    Takes input n(z) sampled at z_samp_centre
+    and evaluates interpolated n(z) at new z values
+    to match a simulation at z_sim_edges
+    :param z_sim_edges: new z values for n(z)
+    :param z_samp_centre: original z values for n(z)
+    :param nz_input: original n(z)
+    :return: new n(z)
+    """
+    
+    nz_input = np.interp(z_sim_edges[1:],z_samp_centre, nz_input) 
+    
+    return nz_input/np.sum(nz_input*(z_sim_edges[1:]-z_sim_edges[:-1]))
