@@ -4,6 +4,10 @@
 + Raytrace through overdensity Healpix maps to return a convergence map
 + Include shear-kappa transformation on the full sphere
 + Include intrinsic alignments (NLA model)
+##
+### Notebook demo:
+- [demo/simple_lens_demo.ipynb](https://github.com/NiallJeffrey/BornRaytrace/blob/main/demo/simple_lens_demo.ipynb)
+- [demo/full_lensing_demo.ipynb](https://github.com/NiallJeffrey/BornRaytrace/blob/main/demo/full_lensing_demo.ipynb)
 
 ![readme_image](https://github.com/NiallJeffrey/BornRaytrace/blob/dev/demo/demo_plot.jpg)
 
@@ -12,7 +16,7 @@ Requirements (python3):
 ``` scipy```
 ``` astropy```
 ``` healpy```
-
+##
 ### Citation:
 
 If you find this code useful, please cite: "Likelihood-free inference with neural compression of DES SV weak lensing map statistics", [Jeffrey, Alsing, Lanusse 2020]
@@ -33,8 +37,8 @@ article{2020,
    pages={954–969}
 }
 ````
-
-# Born weak lensing formalism:
+##
+### Born weak lensing formalism:
 
 The weak lensing convergence κ is given by a weighted projection of the density along the line of sight from the observer to a point with radial comoving distance χ and angular position φ on the sky
 
@@ -50,7 +54,7 @@ where
 
 <img src="https://render.githubusercontent.com/render/math?math=f(\chi') = \int^{\infty}_{\chi^\prime}  \left( \frac{\chi - \chi^\prime}{\chi}\right)n(\chi) \mathrm{d} \chi  "> 
 
-# Validation:
+### Validation:
 
 Included in the repository are example Healpix simulated density maps described by (https://arxiv.org/abs/1706.01472) available: http://cosmo.phys.hirosaki-u.ac.jp/takahasi/allsky_raytracing/
 
