@@ -21,12 +21,12 @@ def kappa_prefactor(H0, om0, length_unit = 'Mpc'):
 
 def raytrace_integration(kappa_prefactor, overdensity_array, a_centre, comoving_edges, mask=None):
     """
-    This function is meant to give the identical result to raytrace_overdensity, but is meant to be cleaner code
+    This function evaluates the Born weak lensing integral
     :param kappa_prefactor: defined as the output of the function kappa_prefactor
     :param overdensity_array: an 2D array of overdensity healpix maps in radial shells
     :param a_centre: scale factor at comoving centre of shells
-    :param mask: healpix map where 1 is observed and 0 is mask
     :param comoving_edges: comoving distance to edges of shells
+    :param mask: healpix map where 1 is observed and 0 is mask
     :return: convergence kappa map
     """
     
@@ -41,9 +41,29 @@ def raytrace_integration(kappa_prefactor, overdensity_array, a_centre, comoving_
     
     if mask is not None:
         mask = np.where(mask>0.5,1.,0.).T
-        overdensity_array = mask * overdensity_array
+        overdensity_array = (mask * overdensity_array.T).T
         
     return np.sum(comoving_prefactors * overdensity_array,axis=1).value
+
+
+def raytrace(H0, om0, overdensity_array, a_centre, comoving_edges, mask=None, Hubble_length_unit = 'Mpc'):
+    """
+    Evaluate weak lensing convergence map using Born approximation
+    :param H0: Hubble parameter with astropy units
+    :param om0: Omega matter
+    :param overdensity_array: an 2D array of overdensity healpix maps in radial shells
+    :param a_centre: scale factor at comoving centre of shells
+    :param comoving_edges: comoving distance to edges of shells
+    :param mask: healpix map where 1 is observed and 0 is mask
+    :param length_unit: for H0 (default Mpc)
+    :return: convergence kappa map
+    """
+    
+    kappa_pref_evaluated = kappa_prefactor(H0, om0, length_unit = Hubble_length_unit)
+    
+    kappa_raytraced = raytrace_integration(kappa_pref_evaluated, overdensity_array, a_centre, comoving_edges, mask)
+    
+    return kappa_raytraced
 
 
 def W_kernel(r_array, z_array, nz, simpsons=False):
