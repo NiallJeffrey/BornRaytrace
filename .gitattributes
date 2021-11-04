@@ -26,3 +26,4 @@ demo/takahashi_mock_example/lens_layer_9_1024.fits filter=lfs diff=lfs merge=lfs
 demo/takahashi_mock_example/k_1024_21.fits filter=lfs diff=lfs merge=lfs -text
 demo/takahashi_mock_example/lens_layer_1_1024.fits filter=lfs diff=lfs merge=lfs -text
 demo/takahashi_mock_example/lens_layer_22_1024.fits filter=lfs diff=lfs merge=lfs -text
+demo/*.npy filter=lfs diff=lfs merge=lfs -text
