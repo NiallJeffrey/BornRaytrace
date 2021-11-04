@@ -1,8 +1,11 @@
 # BornRaytrace
+[![arXiv](https://img.shields.io/badge/arXiv-2009.08459-b31b1b.svg)](https://arxiv.org/abs/2009.08459) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 ### Simulating weak gravitational lensing effects: 
 + Raytrace through overdensity Healpix maps to return a convergence map
 + Include shear-kappa transformation on the full sphere
 + Include intrinsic alignments (NLA model)
+
+![readme_image](https://github.com/NiallJeffrey/BornRaytrace/blob/dev/demo/demo_plot.jpg)
 
 Requirements (python3):
 ``` numpy```
