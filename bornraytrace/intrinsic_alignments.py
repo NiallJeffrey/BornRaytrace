@@ -37,7 +37,7 @@ def D_single(z, om0):
 
 def D_1(z, om0):
     """
-    Provides the normalised linear growth factor
+    Normalised linear growth factor (D_plus)
     :param z: single redshift value or array values
     :param om0: matter density
     :return: normalised linear growth factor
@@ -55,10 +55,10 @@ def D_1(z, om0):
 
 def F_nla(z, om0, A_ia, rho_c1, eta=0., z0=0., lbar=0., l0=1e-9, beta=0.):
     """
-    The remaining function after solving for the weighting used in the intrinsic alignment
+    NLA intrinsic alignment amplitude
     :param z: redshift value
     :param om0: matter density
-    :param A_ia: strength of the intrinsic alignment signal. A free parameter.
+    :param A_ia: amplitude parameter
     :param rho_c1: rho_crit x C1 (C1 approx 1.508e+27 cm3 / g)
     :param eta: redshift dependence
     :param z0: arbitrary redshift pivot parameter
