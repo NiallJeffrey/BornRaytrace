@@ -127,13 +127,12 @@ def shear2kappa(shear_map, lmax=None):
     nside = hp.npix2nside(len(shear_map))
     alms = hp.map2alm([shear_map.real, shear_map.real, shear_map.imag], lmax=lmax, pol=True)
     ell, emm = hp.Alm.getlm(lmax=lmax)
+
     almsE = alms[1]*((ell*(ell+1.))/((ell+2.)*(ell-1)))**0.5
     almsB = alms[2]*((ell*(ell+1.))/((ell+2.)*(ell-1)))**0.5
+
     almsE[ell==0] = 0.0
     almsB[ell==0] = 0.0
-    almsE[ell==1] = 0.0
-    almsB[ell==1] = 0.0
-
 
     kappa_E = hp.alm2map(almsE, nside=nside, lmax=lmax, pol=False)
     kappa_B = hp.alm2map(almsB, nside=nside, lmax=lmax, pol=False)
@@ -181,6 +180,11 @@ def recentre_nz(z_sim_edges, z_samp_centre, nz_input):
 
 
 def get_neighbour_array(nside):
+    """
+    array of indices labelling the 8 neighbouring pixels for each pixel
+    :param nside: nside of map
+    :return: neighbour indices array
+    """
     
     neighbour_array = np.empty((hp.nside2npix(nside), 8), dtype=int)
     for i in range(hp.nside2npix(nside)): 
@@ -190,6 +194,13 @@ def get_neighbour_array(nside):
 
 
 def peak_find(map_input, nside, neighbour_array=None):
+    """
+    Find peaks (local maxima) for a given input map
+    :param map_input: input map
+    :param nside: nside of map
+    :param neighbour_array: optional array of indices labelling the 8 neighbouring pixels for each pixel
+    :return: list of pixel indices for the peaks
+    """
     
     if neighbour_array==None:
         neighbour_array = get_neighbour_array(nside)
