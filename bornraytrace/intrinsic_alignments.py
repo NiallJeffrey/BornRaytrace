@@ -5,6 +5,7 @@ import scipy as sp
 def E_sq(z, om0):
     """
     A function giving Hubble's law for flat cosmology
+
     :param z: redshift value
     :param om0: matter density
     :return: A value for the Hubble parameter
@@ -15,6 +16,7 @@ def E_sq(z, om0):
 def f_integrand(z, om0):
     """
     A function for the redshift integrand in the intrinsic alignment calculation
+
     :param z: redshift value
     :param om0: matter density
     :return: redshift integrand
@@ -25,6 +27,7 @@ def f_integrand(z, om0):
 def D_single(z, om0):
     """
     Provides the normalised linear growth factor
+
     :param z: single redshift value
     :param om0: matter density
     :return: normalised linear growth factor
@@ -38,6 +41,7 @@ def D_single(z, om0):
 def D_1(z, om0):
     """
     Normalised linear growth factor (D_plus)
+
     :param z: single redshift value or array values
     :param om0: matter density
     :return: normalised linear growth factor
@@ -56,6 +60,7 @@ def D_1(z, om0):
 def F_nla(z, om0, A_ia, rho_c1, eta=0., z0=0., lbar=0., l0=1e-9, beta=0.):
     """
     NLA intrinsic alignment amplitude
+
     :param z: redshift value
     :param om0: matter density
     :param A_ia: amplitude parameter

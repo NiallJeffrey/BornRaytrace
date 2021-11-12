@@ -1,4 +1,3 @@
-
 import healpy as hp
 from scipy.integrate import trapz
 from scipy.integrate import simps
@@ -7,21 +6,26 @@ import numpy as np
 from astropy import units as u
 
 
-def kappa_prefactor(H0, om0, length_unit = 'Mpc'):
+def kappa_prefactor(H0, om0, length_unit='Mpc'):
     """
-    Gives prefactor \frac{3 H_0^2 \Omega_m}{2}
+    Gives prefactor (3 H_0^2 Om0)/2
+
     :param H0: Hubble parameter with astropy units
     :param om0: Omega matter
     :param length_unit: for H0 (default Mpc)
     :return: prefactor for lensing
+
     """
+
     bit_with_units = H0.to(u.s ** -1)/const.c.to(str(length_unit + '/s'))
+
     return 1.5 * om0 * bit_with_units * bit_with_units
 
 
 def raytrace_integration(kappa_prefactor, overdensity_array, a_centre, comoving_edges, mask=None):
     """
     This function evaluates the Born weak lensing integral
+
     :param kappa_prefactor: defined as the output of the function kappa_prefactor
     :param overdensity_array: an 2D array of overdensity healpix maps in radial shells
     :param a_centre: scale factor at comoving centre of shells
@@ -29,26 +33,27 @@ def raytrace_integration(kappa_prefactor, overdensity_array, a_centre, comoving_
     :param mask: healpix map where 1 is observed and 0 is mask
     :return: convergence kappa map
     """
-    
+
     assert overdensity_array.shape[1] + 1 == comoving_edges.shape[0]
 
     dr_array = comoving_edges[1:] - comoving_edges[:-1]
     comoving_max = comoving_edges[-1]
     comoving_centre = 0.5*(comoving_edges[:-1] + comoving_edges[1:])
-    
+
     comoving_prefactors = dr_array * (comoving_max - comoving_centre) * comoving_centre / (comoving_max * a_centre)
     comoving_prefactors *= kappa_prefactor
-    
+
     if mask is not None:
         mask = np.where(mask>0.5,1.,0.).T
         overdensity_array = (mask * overdensity_array.T).T
-        
+
     return np.sum(comoving_prefactors * overdensity_array,axis=1).value
 
 
 def raytrace(H0, om0, overdensity_array, a_centre, comoving_edges, mask=None, Hubble_length_unit = 'Mpc'):
     """
     Evaluate weak lensing convergence map using Born approximation
+
     :param H0: Hubble parameter with astropy units
     :param om0: Omega matter
     :param overdensity_array: an 2D array of overdensity healpix maps in radial shells
@@ -58,17 +63,18 @@ def raytrace(H0, om0, overdensity_array, a_centre, comoving_edges, mask=None, Hu
     :param length_unit: for H0 (default Mpc)
     :return: convergence kappa map
     """
-    
+
     kappa_pref_evaluated = kappa_prefactor(H0, om0, length_unit = Hubble_length_unit)
-    
+
     kappa_raytraced = raytrace_integration(kappa_pref_evaluated, overdensity_array, a_centre, comoving_edges, mask)
-    
+
     return kappa_raytraced
 
 
 def W_kernel(r_array, z_array, nz, simpsons=False):
     """
     lensing kernel W s.t.  kappa = prefactor * integral  W(r) * overdensity(r)  dr
+
     :param r_array: comoving distances array
     :param z_array: redshift array matching r_array (cosmology dependent)
     :param nz: source redshift distribution
@@ -99,6 +105,7 @@ def W_kernel(r_array, z_array, nz, simpsons=False):
 def rotate_mask_approx(mask, rot_angles, flip=False):
     """
     rotate healpix mask on sphere
+
     :param mask: healpix map of ones and zeros
     :param rot_angles: rotation on the sphere (e.g. [ 45.91405291 ,150.72092269 , 46.34505909])
     :param flip: boolean, mirror the mask 
@@ -112,13 +119,14 @@ def rotate_mask_approx(mask, rot_angles, flip=False):
     rot_alpha, rot_delta = rot(alpha, delta)
     rot_i = hp.ang2pix(nside, rot_alpha, rot_delta*(1-2*float(flip)))
     rot_map = mask*0.
-    rot_map[rot_i] += 1 
+    rot_map[rot_i] += 1
     return rot_map
 
-    
+
 def shear2kappa(shear_map, lmax=None):
     """
     Performs Kaiser-Squires on the sphere with healpy spherical harmonics
+
     :param shear_map: healpix format complex shear map
     :param lmax: maximum ell multipole
     :return: kappa map
@@ -143,6 +151,7 @@ def shear2kappa(shear_map, lmax=None):
 def kappa2shear(kappa_map, lmax=None):
     """
     Performs inverse Kaiser-Squires on the sphere with healpy spherical harmonics
+
     :param kappa_map: healpix format complex convergence (kappa) map
     :param lmax: maximum multipole
     :return: complex shear map (gamma1 + 1j * gamma2)
@@ -168,46 +177,49 @@ def recentre_nz(z_sim_edges, z_samp_centre, nz_input):
     Takes input n(z) sampled at z_samp_centre
     and evaluates interpolated n(z) at new z values
     to match a simulation at z_sim_edges
+
     :param z_sim_edges: new z values for n(z)
     :param z_samp_centre: original z values for n(z)
     :param nz_input: original n(z)
     :return: new n(z)
     """
-    
-    nz_input = np.interp(z_sim_edges[1:],z_samp_centre, nz_input) 
-    
+
+    nz_input = np.interp(z_sim_edges[1:],z_samp_centre, nz_input)
+
     return nz_input/np.sum(nz_input*(z_sim_edges[1:]-z_sim_edges[:-1]))
 
 
 def get_neighbour_array(nside):
     """
     array of indices labelling the 8 neighbouring pixels for each pixel
+
     :param nside: nside of map
     :return: neighbour indices array
     """
-    
+
     neighbour_array = np.empty((hp.nside2npix(nside), 8), dtype=int)
-    for i in range(hp.nside2npix(nside)): 
+    for i in range(hp.nside2npix(nside)):
         neighbour_array[i] = hp.get_all_neighbours(nside,i)
-        
+
     return neighbour_array
 
 
 def peak_find(map_input, nside, neighbour_array=None):
     """
     Find peaks (local maxima) for a given input map
+
     :param map_input: input map
     :param nside: nside of map
     :param neighbour_array: optional array of indices labelling the 8 neighbouring pixels for each pixel
     :return: list of pixel indices for the peaks
     """
-    
+
     if neighbour_array==None:
         neighbour_array = get_neighbour_array(nside)
-            
+
     peak_loc = []
-    for i in range(hp.nside2npix(nside)): 
+    for i in range(hp.nside2npix(nside)):
         if map_input > np.max(map_input[neighbour_array[i]]):
             peak_loc.append(i)
-            
+
     return peak_loc
