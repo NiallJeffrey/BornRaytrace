@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BornRaytrace documentation &mdash; BornRaytrace  documentation</title>
+  <title>BornRaytrace &mdash; BornRaytrace  documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -55,7 +55,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="#" class="icon icon-home"></a> &raquo;</li>
-      <li>BornRaytrace documentation</li>
+      <li>BornRaytrace</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -65,9 +65,23 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="bornraytrace-documentation">
-<h1>BornRaytrace documentation<a class="headerlink" href="#bornraytrace-documentation" title="Permalink to this headline"></a></h1>
+  <section id="bornraytrace">
+<h1>BornRaytrace<a class="headerlink" href="#bornraytrace" title="Permalink to this headline"></a></h1>
+</section>
+<section id="simulating-weak-gravitational-lensing-effects">
+<h1>Simulating weak gravitational lensing effects<a class="headerlink" href="#simulating-weak-gravitational-lensing-effects" title="Permalink to this headline"></a></h1>
 <p><a class="reference external" href="https://github.com/NiallJeffrey/BornRaytrace">https://github.com/NiallJeffrey/BornRaytrace</a></p>
+<ul class="simple">
+<li><p>Raytrace through overdensity Healpix maps to return a convergence map</p></li>
+<li><p>Include shear-kappa transformation on the full sphere</p></li>
+<li><p>Include intrinsic alignments (NLA model)</p></li>
+</ul>
+<p>Requirements (python3): numpy, scipy, astropy, healpy</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/NiallJeffrey/BornRaytrace/blob/main/demo/simple_lens_demo.ipynb">Simple example notebook</a></p></li>
+<li><p><a class="reference external" href="https://github.com/NiallJeffrey/BornRaytrace/blob/main/demo/full_lensing_demo.ipynb">Full example notebook</a></p></li>
+</ul>
+<img alt="_images/demo_plot.png" src="_images/demo_plot.png" />
 <div class="toctree-wrapper compound">
 <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
@@ -78,27 +92,11 @@
 <li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
 <li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
 </ul>
-</section>
-<section id="simulating-weak-gravitational-lensing-effects">
-<h1>Simulating weak gravitational lensing effects<a class="headerlink" href="#simulating-weak-gravitational-lensing-effects" title="Permalink to this headline"></a></h1>
-<ul class="simple">
-<li><p>Raytrace through overdensity Healpix maps to return a convergence map</p></li>
-<li><p>Include shear-kappa transformation on the full sphere</p></li>
-<li><p>Include intrinsic alignments (NLA model)</p></li>
-</ul>
-<ul class="simple">
-<li><p><a class="reference external" href="https://github.com/NiallJeffrey/BornRaytrace/blob/main/demo/simple_lens_demo.ipynb">Simple example notebook</a></p></li>
-<li><p><a class="reference external" href="https://github.com/NiallJeffrey/BornRaytrace/blob/main/demo/full_lensing_demo.ipynb">Full example notebook</a></p></li>
-</ul>
-<hr class="docutils" />
-<img alt="READMEimage" src="https://github.com/NiallJeffrey/BornRaytrace/blob/dev/demo/demo_plot.jpg" />
-<p>Requirements (python3): numpy, scipy, astropy, healpy</p>
 <hr class="docutils" />
 <p>Citation:</p>
-<p>If you find this code useful, please cite: “Likelihood-free inference with neural compression of DES SV weak lensing map statistics”, Jeffrey, Alsing, Lanusse 2020::
-article{2020,</p>
-<blockquote>
-<div><p>title={Likelihood-free inference with neural compression of DES SV weak lensing map statistics},
+<p>If you find this code useful, please cite: “Likelihood-free inference with neural compression of DES SV weak lensing map statistics”, Jeffrey, Alsing, Lanusse 2020</p>
+<p>article{2020,
+title={Likelihood-free inference with neural compression of DES SV weak lensing map statistics},
 volume={501},
 ISSN={1365-2966},
 url={<a class="reference external" href="http://dx.doi.org/10.1093/mnras/staa3594">http://dx.doi.org/10.1093/mnras/staa3594</a>},
@@ -109,9 +107,7 @@ publisher={Oxford University Press (OUP)},
 author={Jeffrey, Niall and Alsing, Justin and Lanusse, François},
 year={2020},
 month={Nov},
-pages={954–969}</p>
-</div></blockquote>
-<p>}</p>
+pages={954–969}}</p>
 </section>
 
 
