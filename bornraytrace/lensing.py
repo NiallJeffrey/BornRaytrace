@@ -142,6 +142,9 @@ def shear2kappa(shear_map, lmax=None):
     almsE[ell==0] = 0.0
     almsB[ell==0] = 0.0
 
+    almsE[ell==1] = 0.0
+    almsB[ell==1] = 0.0
+
     kappa_E = hp.alm2map(almsE, nside=nside, lmax=lmax, pol=False)
     kappa_B = hp.alm2map(almsB, nside=nside, lmax=lmax, pol=False)
 
