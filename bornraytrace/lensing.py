@@ -123,16 +123,24 @@ def rotate_mask_approx(mask, rot_angles, flip=False):
     return rot_map
 
 
-def shear2kappa(shear_map, lmax=None):
+def shear2kappa(shear_map, lmax, upsample=False):
     """
     Performs Kaiser-Squires on the sphere with healpy spherical harmonics
 
     :param shear_map: healpix format complex shear map
     :param lmax: maximum ell multipole
+    :param upsample: option to upsample map for transforms to mitigate numerical errors
     :return: kappa map
     """
 
     nside = hp.npix2nside(len(shear_map))
+    
+    if upsample==True:
+        nside=nside*2
+        shear_map = hp.ud_grade(shear_map, nside)
+        if lmax<=nside:
+            print('Upsample warning: lmax = ' + str(lmax) + ' and nside = ' + str(nside))
+        
     alms = hp.map2alm([shear_map.real, shear_map.real, shear_map.imag], lmax=lmax, pol=True)
     ell, emm = hp.Alm.getlm(lmax=lmax)
 
@@ -142,33 +150,55 @@ def shear2kappa(shear_map, lmax=None):
     almsE[ell==0] = 0.0
     almsB[ell==0] = 0.0
 
+    almsE[ell==1] = 0.0
+    almsB[ell==1] = 0.0
+
     kappa_E = hp.alm2map(almsE, nside=nside, lmax=lmax, pol=False)
     kappa_B = hp.alm2map(almsB, nside=nside, lmax=lmax, pol=False)
+    
+    if upsample==True:
+        nside=int(nside/2)
+        kappa_E = hp.ud_grade(kappa_E, nside)
+        kappa_B = hp.ud_grade(kappa_B, nside)
 
     return kappa_E + 1j*kappa_B
 
 
-def kappa2shear(kappa_map, lmax=None):
+def kappa2shear(kappa_map, lmax, upsample=False):
     """
     Performs inverse Kaiser-Squires on the sphere with healpy spherical harmonics
 
     :param kappa_map: healpix format complex convergence (kappa) map
     :param lmax: maximum multipole
+    :param upsample: option to upsample map for transforms to mitigate numerical errors
     :return: complex shear map (gamma1 + 1j * gamma2)
     """
 
     nside = hp.npix2nside(len(kappa_map))
+    
+    if upsample==True:
+        nside=nside*2
+        kappa_map = hp.ud_grade(kappa_map, nside)
+        if lmax<=nside:
+            print('Upsample warning: lmax = ' + str(lmax) + ' and nside = ' + str(nside))
 
-    alms = hp.map2alm(kappa_map.real, lmax=lmax, pol=False)
+    almsE = hp.map2alm(kappa_map.real, lmax=lmax, pol=False)
+    almsB = hp.map2alm(kappa_map.imag, lmax=lmax, pol=False)
     ell, emm = hp.Alm.getlm(lmax=lmax)
 
-    kalmsE = alms / (1. * ((ell * (ell + 1.)) / ((ell + 2.) * (ell - 1))) ** 0.5)
+    kalmsE = almsE / (1. * ((ell * (ell + 1.)) / ((ell + 2.) * (ell - 1))) ** 0.5)
     kalmsE[ell == 0] = 0.0
 
-    kalmsB = alms / (1. * ((ell * (ell + 1.)) / ((ell + 2.) * (ell - 1))) ** 0.5)
+    kalmsB = almsB / (1. * ((ell * (ell + 1.)) / ((ell + 2.) * (ell - 1))) ** 0.5)
     kalmsB[ell == 0] = 0.0
 
-    _, gamma1, gamma2 = hp.alm2map([kalmsE, kalmsE, kalmsB], nside=nside, lmax=lmax, pol=True)
+    _, gamma1, gamma2 = hp.alm2map([kalmsE*0., kalmsE, kalmsB], nside=nside, lmax=lmax, pol=True)
+    
+    if upsample==True:
+        nside=int(nside/2)
+        gamma1 = hp.ud_grade(gamma1, nside)
+        gamma2 = hp.ud_grade(gamma2, nside)
+        
     return gamma1 + 1j*gamma2
 
 
