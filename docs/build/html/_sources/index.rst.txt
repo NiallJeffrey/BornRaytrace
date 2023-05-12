@@ -10,7 +10,7 @@ Simulating weak gravitational lensing effects
 https://github.com/NiallJeffrey/BornRaytrace
 
 
-+ Raytrace through overdensity Healpix maps to return a convergence map
++ Raytrace through overdensity Healpix maps to return convergence maps
 
 + Include shear-kappa transformation on the full sphere
 

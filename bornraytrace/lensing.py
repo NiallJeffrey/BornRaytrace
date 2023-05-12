@@ -164,23 +164,17 @@ def shear2kappa(shear_map, lmax, upsample=False):
     return kappa_E + 1j*kappa_B
 
 
-def kappa2shear(kappa_map, lmax, upsample=False):
+def kappa2shear(kappa_map, lmax, downsample_nside=None):
     """
     Performs inverse Kaiser-Squires on the sphere with healpy spherical harmonics
 
     :param kappa_map: healpix format complex convergence (kappa) map
     :param lmax: maximum multipole
-    :param upsample: option to upsample map for transforms to mitigate numerical errors
+    :param downsample: option to downsample map output. A good compromise choice to reduce nside by half is: lmax=nside*2, downsample_nside=nside/2
     :return: complex shear map (gamma1 + 1j * gamma2)
     """
 
     nside = hp.npix2nside(len(kappa_map))
-    
-    if upsample==True:
-        nside=nside*2
-        kappa_map = hp.ud_grade(kappa_map, nside)
-        if lmax<=nside:
-            print('Upsample warning: lmax = ' + str(lmax) + ' and nside = ' + str(nside))
 
     almsE = hp.map2alm(kappa_map.real, lmax=lmax, pol=False)
     almsB = hp.map2alm(kappa_map.imag, lmax=lmax, pol=False)
@@ -192,12 +186,12 @@ def kappa2shear(kappa_map, lmax, upsample=False):
     kalmsB = almsB / (1. * ((ell * (ell + 1.)) / ((ell + 2.) * (ell - 1))) ** 0.5)
     kalmsB[ell == 0] = 0.0
 
-    _, gamma1, gamma2 = hp.alm2map([kalmsE*0., kalmsE, kalmsB], nside=nside, lmax=lmax, pol=True)
-    
-    if upsample==True:
-        nside=int(nside/2)
-        gamma1 = hp.ud_grade(gamma1, nside)
-        gamma2 = hp.ud_grade(gamma2, nside)
+    if downsample_nside is None:
+        _, gamma1, gamma2 = hp.alm2map([kalmsE*0., kalmsE, kalmsB], nside=int(nside), pol=True)
+    else:
+        assert (downsample_nside<=nside)
+        _, gamma1, gamma2 = hp.alm2map([kalmsE*0., kalmsE, kalmsB], nside=int(downsample_nside), pol=True)
+
         
     return gamma1 + 1j*gamma2
 

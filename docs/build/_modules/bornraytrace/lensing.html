@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bornraytrace.lensing &mdash; BornRaytrace  documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> BornRaytrace
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">bornraytrace</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">BornRaytrace</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+      <li>bornraytrace.lensing</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for bornraytrace.lensing</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">healpy</span> <span class="k">as</span> <span class="nn">hp</span>
+<span class="kn">from</span> <span class="nn">scipy.integrate</span> <span class="kn">import</span> <span class="n">trapz</span>
+<span class="kn">from</span> <span class="nn">scipy.integrate</span> <span class="kn">import</span> <span class="n">simps</span>
+<span class="kn">from</span> <span class="nn">astropy</span> <span class="kn">import</span> <span class="n">constants</span> <span class="k">as</span> <span class="n">const</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">astropy</span> <span class="kn">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">u</span>
+
+
+<div class="viewcode-block" id="kappa_prefactor"><a class="viewcode-back" href="../../bornraytrace.html#bornraytrace.lensing.kappa_prefactor">[docs]</a><span class="k">def</span> <span class="nf">kappa_prefactor</span><span class="p">(</span><span class="n">H0</span><span class="p">,</span> <span class="n">om0</span><span class="p">,</span> <span class="n">length_unit</span><span class="o">=</span><span class="s1">&#39;Mpc&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Gives prefactor (3 H_0^2 Om0)/2</span>
+
+<span class="sd">    :param H0: Hubble parameter with astropy units</span>
+<span class="sd">    :param om0: Omega matter</span>
+<span class="sd">    :param length_unit: for H0 (default Mpc)</span>
+<span class="sd">    :return: prefactor for lensing</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">bit_with_units</span> <span class="o">=</span> <span class="n">H0</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">s</span> <span class="o">**</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="n">const</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">length_unit</span> <span class="o">+</span> <span class="s1">&#39;/s&#39;</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="mf">1.5</span> <span class="o">*</span> <span class="n">om0</span> <span class="o">*</span> <span class="n">bit_with_units</span> <span class="o">*</span> <span class="n">bit_with_units</span></div>
+
+
+<div class="viewcode-block" id="raytrace_integration"><a class="viewcode-back" href="../../bornraytrace.html#bornraytrace.lensing.raytrace_integration">[docs]</a><span class="k">def</span> <span class="nf">raytrace_integration</span><span class="p">(</span><span class="n">kappa_prefactor</span><span class="p">,</span> <span class="n">overdensity_array</span><span class="p">,</span> <span class="n">a_centre</span><span class="p">,</span> <span class="n">comoving_edges</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function evaluates the Born weak lensing integral</span>
+
+<span class="sd">    :param kappa_prefactor: defined as the output of the function kappa_prefactor</span>
+<span class="sd">    :param overdensity_array: an 2D array of overdensity healpix maps in radial shells</span>
+<span class="sd">    :param a_centre: scale factor at comoving centre of shells</span>
+<span class="sd">    :param comoving_edges: comoving distance to edges of shells</span>
+<span class="sd">    :param mask: healpix map where 1 is observed and 0 is mask</span>
+<span class="sd">    :return: convergence kappa map</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">assert</span> <span class="n">overdensity_array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">==</span> <span class="n">comoving_edges</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="n">dr_array</span> <span class="o">=</span> <span class="n">comoving_edges</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">-</span> <span class="n">comoving_edges</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">comoving_max</span> <span class="o">=</span> <span class="n">comoving_edges</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">comoving_centre</span> <span class="o">=</span> <span class="mf">0.5</span><span class="o">*</span><span class="p">(</span><span class="n">comoving_edges</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">comoving_edges</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+    <span class="n">comoving_prefactors</span> <span class="o">=</span> <span class="n">dr_array</span> <span class="o">*</span> <span class="p">(</span><span class="n">comoving_max</span> <span class="o">-</span> <span class="n">comoving_centre</span><span class="p">)</span> <span class="o">*</span> <span class="n">comoving_centre</span> <span class="o">/</span> <span class="p">(</span><span class="n">comoving_max</span> <span class="o">*</span> <span class="n">a_centre</span><span class="p">)</span>
+    <span class="n">comoving_prefactors</span> <span class="o">*=</span> <span class="n">kappa_prefactor</span>
+
+    <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">mask</span><span class="o">&gt;</span><span class="mf">0.5</span><span class="p">,</span><span class="mf">1.</span><span class="p">,</span><span class="mf">0.</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+        <span class="n">overdensity_array</span> <span class="o">=</span> <span class="p">(</span><span class="n">mask</span> <span class="o">*</span> <span class="n">overdensity_array</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">comoving_prefactors</span> <span class="o">*</span> <span class="n">overdensity_array</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">value</span></div>
+
+
+<div class="viewcode-block" id="raytrace"><a class="viewcode-back" href="../../bornraytrace.html#bornraytrace.lensing.raytrace">[docs]</a><span class="k">def</span> <span class="nf">raytrace</span><span class="p">(</span><span class="n">H0</span><span class="p">,</span> <span class="n">om0</span><span class="p">,</span> <span class="n">overdensity_array</span><span class="p">,</span> <span class="n">a_centre</span><span class="p">,</span> <span class="n">comoving_edges</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">Hubble_length_unit</span> <span class="o">=</span> <span class="s1">&#39;Mpc&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Evaluate weak lensing convergence map using Born approximation</span>
+
+<span class="sd">    :param H0: Hubble parameter with astropy units</span>
+<span class="sd">    :param om0: Omega matter</span>
+<span class="sd">    :param overdensity_array: an 2D array of overdensity healpix maps in radial shells</span>
+<span class="sd">    :param a_centre: scale factor at comoving centre of shells</span>
+<span class="sd">    :param comoving_edges: comoving distance to edges of shells</span>
+<span class="sd">    :param mask: healpix map where 1 is observed and 0 is mask</span>
+<span class="sd">    :param length_unit: for H0 (default Mpc)</span>
+<span class="sd">    :return: convergence kappa map</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">kappa_pref_evaluated</span> <span class="o">=</span> <span class="n">kappa_prefactor</span><span class="p">(</span><span class="n">H0</span><span class="p">,</span> <span class="n">om0</span><span class="p">,</span> <span class="n">length_unit</span> <span class="o">=</span> <span class="n">Hubble_length_unit</span><span class="p">)</span>
+
+    <span class="n">kappa_raytraced</span> <span class="o">=</span> <span class="n">raytrace_integration</span><span class="p">(</span><span class="n">kappa_pref_evaluated</span><span class="p">,</span> <span class="n">overdensity_array</span><span class="p">,</span> <span class="n">a_centre</span><span class="p">,</span> <span class="n">comoving_edges</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">kappa_raytraced</span></div>
+
+
+<div class="viewcode-block" id="W_kernel"><a class="viewcode-back" href="../../bornraytrace.html#bornraytrace.lensing.W_kernel">[docs]</a><span class="k">def</span> <span class="nf">W_kernel</span><span class="p">(</span><span class="n">r_array</span><span class="p">,</span> <span class="n">z_array</span><span class="p">,</span> <span class="n">nz</span><span class="p">,</span> <span class="n">simpsons</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    lensing kernel W s.t.  kappa = prefactor * integral  W(r) * overdensity(r)  dr</span>
+
+<span class="sd">    :param r_array: comoving distances array</span>
+<span class="sd">    :param z_array: redshift array matching r_array (cosmology dependent)</span>
+<span class="sd">    :param nz: source redshift distribution</span>
+<span class="sd">    :param simpsons: boolean to use simpsons integratio</span>
+<span class="sd">    :return: W = r * q /r</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># normalised redshift distribution nr</span>
+    <span class="k">if</span> <span class="n">simpsons</span><span class="p">:</span>
+        <span class="n">normalisation</span> <span class="o">=</span> <span class="n">simps</span><span class="p">(</span><span class="n">nz</span><span class="p">,</span> <span class="n">r_array</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">normalisation</span> <span class="o">=</span> <span class="n">trapz</span><span class="p">(</span><span class="n">nz</span><span class="p">,</span> <span class="n">r_array</span><span class="p">)</span>
+
+    <span class="n">nr</span> <span class="o">=</span> <span class="n">nz</span> <span class="o">/</span> <span class="n">normalisation</span>
+
+    <span class="n">q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">r_array</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>  <span class="c1"># q efficiency  eq. 24 in Kilbinger 15</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">r_array</span><span class="p">)):</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">r_array</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">integrand</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">r_array</span><span class="p">[</span><span class="n">i</span><span class="p">:]</span> <span class="o">-</span> <span class="n">r</span><span class="p">,</span> <span class="n">r_array</span><span class="p">[</span><span class="n">i</span><span class="p">:]),</span> <span class="n">nr</span><span class="p">[</span><span class="n">i</span><span class="p">:])</span>
+        <span class="k">if</span> <span class="n">simpsons</span><span class="p">:</span>
+            <span class="n">q</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">simps</span><span class="p">(</span><span class="n">integrand</span><span class="p">,</span> <span class="n">r_array</span><span class="p">[</span><span class="n">i</span><span class="p">:])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">q</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">trapz</span><span class="p">(</span><span class="n">integrand</span><span class="p">,</span> <span class="n">r_array</span><span class="p">[</span><span class="n">i</span><span class="p">:])</span>
+
+    <span class="k">return</span> <span class="n">q</span> <span class="o">*</span> <span class="n">r_array</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">+</span> <span class="n">z_array</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="rotate_mask_approx"><a class="viewcode-back" href="../../bornraytrace.html#bornraytrace.lensing.rotate_mask_approx">[docs]</a><span class="k">def</span> <span class="nf">rotate_mask_approx</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">rot_angles</span><span class="p">,</span> <span class="n">flip</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    rotate healpix mask on sphere</span>
+
+<span class="sd">    :param mask: healpix map of ones and zeros</span>
+<span class="sd">    :param rot_angles: rotation on the sphere (e.g. [ 45.91405291 ,150.72092269 , 46.34505909])</span>
+<span class="sd">    :param flip: boolean, mirror the mask </span>
+<span class="sd">    :return: rotated map</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">nside</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">npix2nside</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">mask</span><span class="p">))</span>
+    <span class="n">alpha</span><span class="p">,</span> <span class="n">delta</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">pix2ang</span><span class="p">(</span><span class="n">nside</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">mask</span><span class="p">)))</span>
+    <span class="n">alpha</span> <span class="o">=</span> <span class="n">alpha</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">mask</span><span class="o">&gt;</span><span class="mf">0.</span><span class="p">)]</span>
+    <span class="n">delta</span> <span class="o">=</span> <span class="n">delta</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">mask</span><span class="o">&gt;</span><span class="mf">0.</span><span class="p">)]</span>
+    <span class="n">rot</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">rotator</span><span class="o">.</span><span class="n">Rotator</span><span class="p">(</span><span class="n">rot</span><span class="o">=</span><span class="n">rot_angles</span><span class="p">,</span> <span class="n">deg</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">rot_alpha</span><span class="p">,</span> <span class="n">rot_delta</span> <span class="o">=</span> <span class="n">rot</span><span class="p">(</span><span class="n">alpha</span><span class="p">,</span> <span class="n">delta</span><span class="p">)</span>
+    <span class="n">rot_i</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">ang2pix</span><span class="p">(</span><span class="n">nside</span><span class="p">,</span> <span class="n">rot_alpha</span><span class="p">,</span> <span class="n">rot_delta</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="nb">float</span><span class="p">(</span><span class="n">flip</span><span class="p">)))</span>
+    <span class="n">rot_map</span> <span class="o">=</span> <span class="n">mask</span><span class="o">*</span><span class="mf">0.</span>
+    <span class="n">rot_map</span><span class="p">[</span><span class="n">rot_i</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">rot_map</span></div>
+
+
+<div class="viewcode-block" id="shear2kappa"><a class="viewcode-back" href="../../bornraytrace.html#bornraytrace.lensing.shear2kappa">[docs]</a><span class="k">def</span> <span class="nf">shear2kappa</span><span class="p">(</span><span class="n">shear_map</span><span class="p">,</span> <span class="n">lmax</span><span class="p">,</span> <span class="n">upsample</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Performs Kaiser-Squires on the sphere with healpy spherical harmonics</span>
+
+<span class="sd">    :param shear_map: healpix format complex shear map</span>
+<span class="sd">    :param lmax: maximum ell multipole</span>
+<span class="sd">    :param upsample: option to upsample map for transforms to mitigate numerical errors</span>
+<span class="sd">    :return: kappa map</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">nside</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">npix2nside</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">shear_map</span><span class="p">))</span>
+    
+    <span class="k">if</span> <span class="n">upsample</span><span class="o">==</span><span class="kc">True</span><span class="p">:</span>
+        <span class="n">nside</span><span class="o">=</span><span class="n">nside</span><span class="o">*</span><span class="mi">2</span>
+        <span class="n">shear_map</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">ud_grade</span><span class="p">(</span><span class="n">shear_map</span><span class="p">,</span> <span class="n">nside</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">lmax</span><span class="o">&lt;=</span><span class="n">nside</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Upsample warning: lmax = &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">lmax</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39; and nside = &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">nside</span><span class="p">))</span>
+        
+    <span class="n">alms</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">map2alm</span><span class="p">([</span><span class="n">shear_map</span><span class="o">.</span><span class="n">real</span><span class="p">,</span> <span class="n">shear_map</span><span class="o">.</span><span class="n">real</span><span class="p">,</span> <span class="n">shear_map</span><span class="o">.</span><span class="n">imag</span><span class="p">],</span> <span class="n">lmax</span><span class="o">=</span><span class="n">lmax</span><span class="p">,</span> <span class="n">pol</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">ell</span><span class="p">,</span> <span class="n">emm</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">Alm</span><span class="o">.</span><span class="n">getlm</span><span class="p">(</span><span class="n">lmax</span><span class="o">=</span><span class="n">lmax</span><span class="p">)</span>
+
+    <span class="n">almsE</span> <span class="o">=</span> <span class="n">alms</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="p">((</span><span class="n">ell</span><span class="o">*</span><span class="p">(</span><span class="n">ell</span><span class="o">+</span><span class="mf">1.</span><span class="p">))</span><span class="o">/</span><span class="p">((</span><span class="n">ell</span><span class="o">+</span><span class="mf">2.</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">ell</span><span class="o">-</span><span class="mi">1</span><span class="p">)))</span><span class="o">**</span><span class="mf">0.5</span>
+    <span class="n">almsB</span> <span class="o">=</span> <span class="n">alms</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">*</span><span class="p">((</span><span class="n">ell</span><span class="o">*</span><span class="p">(</span><span class="n">ell</span><span class="o">+</span><span class="mf">1.</span><span class="p">))</span><span class="o">/</span><span class="p">((</span><span class="n">ell</span><span class="o">+</span><span class="mf">2.</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">ell</span><span class="o">-</span><span class="mi">1</span><span class="p">)))</span><span class="o">**</span><span class="mf">0.5</span>
+
+    <span class="n">almsE</span><span class="p">[</span><span class="n">ell</span><span class="o">==</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="n">almsB</span><span class="p">[</span><span class="n">ell</span><span class="o">==</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+    <span class="n">almsE</span><span class="p">[</span><span class="n">ell</span><span class="o">==</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="n">almsB</span><span class="p">[</span><span class="n">ell</span><span class="o">==</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+    <span class="n">kappa_E</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">alm2map</span><span class="p">(</span><span class="n">almsE</span><span class="p">,</span> <span class="n">nside</span><span class="o">=</span><span class="n">nside</span><span class="p">,</span> <span class="n">lmax</span><span class="o">=</span><span class="n">lmax</span><span class="p">,</span> <span class="n">pol</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">kappa_B</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">alm2map</span><span class="p">(</span><span class="n">almsB</span><span class="p">,</span> <span class="n">nside</span><span class="o">=</span><span class="n">nside</span><span class="p">,</span> <span class="n">lmax</span><span class="o">=</span><span class="n">lmax</span><span class="p">,</span> <span class="n">pol</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    
+    <span class="k">if</span> <span class="n">upsample</span><span class="o">==</span><span class="kc">True</span><span class="p">:</span>
+        <span class="n">nside</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">nside</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">kappa_E</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">ud_grade</span><span class="p">(</span><span class="n">kappa_E</span><span class="p">,</span> <span class="n">nside</span><span class="p">)</span>
+        <span class="n">kappa_B</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">ud_grade</span><span class="p">(</span><span class="n">kappa_B</span><span class="p">,</span> <span class="n">nside</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">kappa_E</span> <span class="o">+</span> <span class="mi">1</span><span class="n">j</span><span class="o">*</span><span class="n">kappa_B</span></div>
+
+
+<div class="viewcode-block" id="kappa2shear"><a class="viewcode-back" href="../../bornraytrace.html#bornraytrace.lensing.kappa2shear">[docs]</a><span class="k">def</span> <span class="nf">kappa2shear</span><span class="p">(</span><span class="n">kappa_map</span><span class="p">,</span> <span class="n">lmax</span><span class="p">,</span> <span class="n">downsample_nside</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Performs inverse Kaiser-Squires on the sphere with healpy spherical harmonics</span>
+
+<span class="sd">    :param kappa_map: healpix format complex convergence (kappa) map</span>
+<span class="sd">    :param lmax: maximum multipole</span>
+<span class="sd">    :param downsample: option to downsample map output. A good compromise choice to reduce nside by half is: lmax=nside*2, downsample_nside=nside/2</span>
+<span class="sd">    :return: complex shear map (gamma1 + 1j * gamma2)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">nside</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">npix2nside</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">kappa_map</span><span class="p">))</span>
+
+    <span class="n">almsE</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">map2alm</span><span class="p">(</span><span class="n">kappa_map</span><span class="o">.</span><span class="n">real</span><span class="p">,</span> <span class="n">lmax</span><span class="o">=</span><span class="n">lmax</span><span class="p">,</span> <span class="n">pol</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">almsB</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">map2alm</span><span class="p">(</span><span class="n">kappa_map</span><span class="o">.</span><span class="n">imag</span><span class="p">,</span> <span class="n">lmax</span><span class="o">=</span><span class="n">lmax</span><span class="p">,</span> <span class="n">pol</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">ell</span><span class="p">,</span> <span class="n">emm</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">Alm</span><span class="o">.</span><span class="n">getlm</span><span class="p">(</span><span class="n">lmax</span><span class="o">=</span><span class="n">lmax</span><span class="p">)</span>
+
+    <span class="n">kalmsE</span> <span class="o">=</span> <span class="n">almsE</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">*</span> <span class="p">((</span><span class="n">ell</span> <span class="o">*</span> <span class="p">(</span><span class="n">ell</span> <span class="o">+</span> <span class="mf">1.</span><span class="p">))</span> <span class="o">/</span> <span class="p">((</span><span class="n">ell</span> <span class="o">+</span> <span class="mf">2.</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">ell</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)))</span> <span class="o">**</span> <span class="mf">0.5</span><span class="p">)</span>
+    <span class="n">kalmsE</span><span class="p">[</span><span class="n">ell</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+    <span class="n">kalmsB</span> <span class="o">=</span> <span class="n">almsB</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">*</span> <span class="p">((</span><span class="n">ell</span> <span class="o">*</span> <span class="p">(</span><span class="n">ell</span> <span class="o">+</span> <span class="mf">1.</span><span class="p">))</span> <span class="o">/</span> <span class="p">((</span><span class="n">ell</span> <span class="o">+</span> <span class="mf">2.</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">ell</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)))</span> <span class="o">**</span> <span class="mf">0.5</span><span class="p">)</span>
+    <span class="n">kalmsB</span><span class="p">[</span><span class="n">ell</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+    <span class="k">if</span> <span class="n">downsample_nside</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">gamma1</span><span class="p">,</span> <span class="n">gamma2</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">alm2map</span><span class="p">([</span><span class="n">kalmsE</span><span class="o">*</span><span class="mf">0.</span><span class="p">,</span> <span class="n">kalmsE</span><span class="p">,</span> <span class="n">kalmsB</span><span class="p">],</span> <span class="n">nside</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">nside</span><span class="p">),</span> <span class="n">pol</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="n">downsample_nside</span><span class="o">&lt;=</span><span class="n">nside</span><span class="p">)</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">gamma1</span><span class="p">,</span> <span class="n">gamma2</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">alm2map</span><span class="p">([</span><span class="n">kalmsE</span><span class="o">*</span><span class="mf">0.</span><span class="p">,</span> <span class="n">kalmsE</span><span class="p">,</span> <span class="n">kalmsB</span><span class="p">],</span> <span class="n">nside</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">downsample_nside</span><span class="p">),</span> <span class="n">pol</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        
+    <span class="k">return</span> <span class="n">gamma1</span> <span class="o">+</span> <span class="mi">1</span><span class="n">j</span><span class="o">*</span><span class="n">gamma2</span></div>
+
+
+<div class="viewcode-block" id="recentre_nz"><a class="viewcode-back" href="../../bornraytrace.html#bornraytrace.lensing.recentre_nz">[docs]</a><span class="k">def</span> <span class="nf">recentre_nz</span><span class="p">(</span><span class="n">z_sim_edges</span><span class="p">,</span> <span class="n">z_samp_centre</span><span class="p">,</span> <span class="n">nz_input</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Takes input n(z) sampled at z_samp_centre</span>
+<span class="sd">    and evaluates interpolated n(z) at new z values</span>
+<span class="sd">    to match a simulation at z_sim_edges</span>
+
+<span class="sd">    :param z_sim_edges: new z values for n(z)</span>
+<span class="sd">    :param z_samp_centre: original z values for n(z)</span>
+<span class="sd">    :param nz_input: original n(z)</span>
+<span class="sd">    :return: new n(z)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">nz_input</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">z_sim_edges</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span><span class="n">z_samp_centre</span><span class="p">,</span> <span class="n">nz_input</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">nz_input</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">nz_input</span><span class="o">*</span><span class="p">(</span><span class="n">z_sim_edges</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">-</span><span class="n">z_sim_edges</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span></div>
+
+
+<div class="viewcode-block" id="get_neighbour_array"><a class="viewcode-back" href="../../bornraytrace.html#bornraytrace.lensing.get_neighbour_array">[docs]</a><span class="k">def</span> <span class="nf">get_neighbour_array</span><span class="p">(</span><span class="n">nside</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    array of indices labelling the 8 neighbouring pixels for each pixel</span>
+
+<span class="sd">    :param nside: nside of map</span>
+<span class="sd">    :return: neighbour indices array</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">neighbour_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">hp</span><span class="o">.</span><span class="n">nside2npix</span><span class="p">(</span><span class="n">nside</span><span class="p">),</span> <span class="mi">8</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">hp</span><span class="o">.</span><span class="n">nside2npix</span><span class="p">(</span><span class="n">nside</span><span class="p">)):</span>
+        <span class="n">neighbour_array</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">get_all_neighbours</span><span class="p">(</span><span class="n">nside</span><span class="p">,</span><span class="n">i</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">neighbour_array</span></div>
+
+
+<div class="viewcode-block" id="peak_find"><a class="viewcode-back" href="../../bornraytrace.html#bornraytrace.lensing.peak_find">[docs]</a><span class="k">def</span> <span class="nf">peak_find</span><span class="p">(</span><span class="n">map_input</span><span class="p">,</span> <span class="n">nside</span><span class="p">,</span> <span class="n">neighbour_array</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Find peaks (local maxima) for a given input map</span>
+
+<span class="sd">    :param map_input: input map</span>
+<span class="sd">    :param nside: nside of map</span>
+<span class="sd">    :param neighbour_array: optional array of indices labelling the 8 neighbouring pixels for each pixel</span>
+<span class="sd">    :return: list of pixel indices for the peaks</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">neighbour_array</span><span class="o">==</span><span class="kc">None</span><span class="p">:</span>
+        <span class="n">neighbour_array</span> <span class="o">=</span> <span class="n">get_neighbour_array</span><span class="p">(</span><span class="n">nside</span><span class="p">)</span>
+
+    <span class="n">peak_loc</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">hp</span><span class="o">.</span><span class="n">nside2npix</span><span class="p">(</span><span class="n">nside</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="n">map_input</span> <span class="o">&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">map_input</span><span class="p">[</span><span class="n">neighbour_array</span><span class="p">[</span><span class="n">i</span><span class="p">]]):</span>
+            <span class="n">peak_loc</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">peak_loc</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Niall Jeffrey.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
