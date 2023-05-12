@@ -1,9 +1,6 @@
 bornraytrace package
 ====================
 
-Submodules
-----------
-
 bornraytrace.intrinsic\_alignments module
 -----------------------------------------
 
@@ -20,10 +17,3 @@ bornraytrace.lensing module
    :undoc-members:
    :show-inheritance:
 
-Module contents
----------------
-
-.. automodule:: bornraytrace
-   :members:
-   :undoc-members:
-   :show-inheritance:
